@@ -16,6 +16,26 @@ node dev-server.mjs
 http://localhost:8000
 ```
 
+## Python 后端预览
+
+你也可以使用 Python 启动一个本地后端服务器：
+
+```powershell
+python server.py
+```
+
+然后访问：
+
+```text
+http://localhost:8000
+```
+
+这个后端会提供：
+
+- `/api/posts`：返回 `posts.json` 中的文章目录
+- `/api/post/<slug>`：读取 Markdown 文件并返回渲染后的 HTML 内容
+
+这样就把网站的数据后端改成了 Python 实现。
 ## 写一篇新文章
 
 1. 在 `posts` 文件夹中新建一个 Markdown 文件，例如 `posts/2026-05-20-react-notes.md`。

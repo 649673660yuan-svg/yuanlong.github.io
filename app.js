@@ -144,17 +144,17 @@ async function selectPost(slug) {
     <h3>正在加载文章...</h3>
   `;
 
-  const response = await fetch(post.file);
-  const markdown = await response.text();
+  const response = await fetch(`/api/post/${encodeURIComponent(slug)}`);
+  if (!response.ok) {
+    throw new Error(`Unable to load post: ${response.statusText}`);
+  }
+  const html = await response.text();
 
-  reader.innerHTML = `
-    <p class="meta">${formatDate(post.date)} · ${post.tags.join(" / ")}</p>
-    ${markdownToHtml(markdown)}
-  `;
+  reader.innerHTML = html;
 }
 
 async function init() {
-  const response = await fetch("posts.json");
+  const response = await fetch("/api/posts");
   const posts = await response.json();
   state.posts = posts.sort((a, b) => b.date.localeCompare(a.date));
 

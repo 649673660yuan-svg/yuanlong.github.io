@@ -2,15 +2,23 @@
   {
     "slug": "example-first-post",
     "title": "我的第一篇技术日记",
-    "date": "2026-05-19",
+    "date": "2026-05-18",
     "summary": "用一篇短文记录今天的技术收获，也说明以后如何持续更新这个博客。",
     "tags": ["日记", "写作", "工程实践"],
     "file": "posts/example-first-post.md"
   },
   {
     "slug": "frontend-debug-notes",
-    "title": "一次前端调试复盘",
-    "date": "2026-05-18",
+    "title": "一次前端调试复盘-1",
+    "date": "2026-05-19",
+    "summary": "从问题现象、排查路径到最终修复，把调试过程写成可以复用的方法。",
+    "tags": ["前端", "调试", "复盘"],
+    "file": "posts/frontend-debug-notes.md"
+  },
+  {
+    "slug": "frontend-debug-notes",
+    "title": "一次前端调试复盘-2",
+    "date": "2026-05-19",
     "summary": "从问题现象、排查路径到最终修复，把调试过程写成可以复用的方法。",
     "tags": ["前端", "调试", "复盘"],
     "file": "posts/frontend-debug-notes.md"
