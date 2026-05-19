@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="个人技术分享博客，记录工程实践、学习笔记和每日技术日记。"
+    />
+    <title>技术日记 | Personal Tech Blog</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav">
+        <a class="brand" href="#top" aria-label="返回首页">
+          <span class="brand-mark">T</span>
+          <span>
+            <strong>技术日记</strong>
+            <small>Daily Engineering Notes</small>
+          </span>
+        </a>
+        <div class="nav-links" aria-label="主导航">
+          <a href="#posts">文章</a>
+          <a href="#about">关于</a>
+          <a href="posts/example-first-post.md">写作样例</a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow">代码、系统、经验复盘</p>
+          <h1>把每天学到的技术，沉淀成可以回看的知识库。</h1>
+          <p class="hero-text">
+            这里适合写开发笔记、踩坑记录、源码阅读、架构思考和每日技术日记。
+            每篇文章都是一个 Markdown 文件，新增、修改、发布都很轻。
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#posts">阅读文章</a>
+            <a class="button ghost" href="README.md">查看写作说明</a>
+          </div>
+        </div>
+        <aside class="hero-panel" aria-label="今日记录摘要">
+          <div class="terminal">
+            <div class="terminal-bar">
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+            <pre><code>today.log
+
+title: 今天学到了什么？
+tags: JavaScript, 架构, 复盘
+
+1. 记录一个真实问题
+2. 写清楚解决路径
+3. 留下明天的追问</code></pre>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section-shell" id="posts">
+        <div class="section-heading">
+          <p class="eyebrow">Posts</p>
+          <h2>最新技术分享</h2>
+          <p>按日期排序，支持标签筛选和关键词搜索。</p>
+        </div>
+
+        <div class="toolbar">
+          <label class="search">
+            <span>搜索</span>
+            <input id="searchInput" type="search" placeholder="输入标题、摘要或标签" />
+          </label>
+          <div class="tag-filter" id="tagFilter" aria-label="标签筛选"></div>
+        </div>
+
+        <div class="content-grid">
+          <div class="post-list" id="postList" aria-live="polite"></div>
+          <article class="reader" id="reader">
+            <div class="empty-state">
+              <p class="eyebrow">Select</p>
+              <h3>选择一篇文章开始阅读</h3>
+              <p>左侧会显示你的所有技术日记和分享文章。</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="about" id="about">
+        <div>
+          <p class="eyebrow">About</p>
+          <h2>一个长期可更新的个人技术博客</h2>
+        </div>
+        <p>
+          你只需要在 <code>posts</code> 文件夹里新增 Markdown 文件，并把文章信息加到
+          <code>posts.json</code>。提交到 GitHub 后，GitHub Pages 会把它发布成网站。
+        </p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <span>Built for daily technical writing.</span>
+      <a href="#top">回到顶部</a>
+    </footer>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>
