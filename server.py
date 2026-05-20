@@ -1,16 +1,15 @@
 from flask import Flask, jsonify
 from pathlib import Path
+import html
 import json
 import re
-import html
-import os
 
 app = Flask(__name__)
-ROOT = Path(".").resolve()
+ROOT = Path(__file__).resolve().parent
 
 
 def escape_html(value: str) -> str:
-    return html.escape(value, quote=True)
+    return html.escape(str(value), quote=True)
 
 
 def parse_inline(text: str) -> str:
@@ -19,7 +18,7 @@ def parse_inline(text: str) -> str:
     content = re.sub(r"\*\*([^*]+)\*\*", r"<strong>\1</strong>", content)
     content = re.sub(
         r"\[([^\]]+)\]\(([^)]+)\)",
-        r"<a href=\"\2\" target=\"_blank\" rel=\"noreferrer\">\1</a>",
+        r'<a href="\2" target="_blank" rel="noreferrer">\1</a>',
         content,
     )
     return content
@@ -33,12 +32,8 @@ def markdown_to_html(markdown: str) -> str:
 
     for line in lines:
         if line.startswith("```"):
-            if in_code:
-                html_lines.append("</code></pre>")
-                in_code = False
-            else:
-                html_lines.append("<pre><code>")
-                in_code = True
+            html_lines.append("</code></pre>" if in_code else "<pre><code>")
+            in_code = not in_code
             continue
 
         if in_code:
@@ -49,7 +44,8 @@ def markdown_to_html(markdown: str) -> str:
             if not in_list:
                 html_lines.append("<ul>")
                 in_list = True
-            html_lines.append(f"<li>{parse_inline(re.sub(r'^\s*-\s+', '', line))}</li>")
+            item = re.sub(r"^\s*-\s+", "", line)
+            html_lines.append(f"<li>{parse_inline(item)}</li>")
             continue
 
         if in_list:
@@ -73,24 +69,18 @@ def markdown_to_html(markdown: str) -> str:
 
 def load_posts() -> list:
     posts_path = ROOT / "posts.json"
-    if not posts_path.exists():
-        raise FileNotFoundError("posts.json not found")
     posts = json.loads(posts_path.read_text(encoding="utf-8"))
     return sorted(posts, key=lambda item: item.get("date", ""), reverse=True)
 
 
 def find_post(slug: str, posts: list):
-    for post in posts:
-        if post.get("slug") == slug:
-            return post
-    return None
+    return next((post for post in posts if post.get("slug") == slug), None)
 
 
 @app.route("/api/posts")
 def api_posts():
     try:
-        posts = load_posts()
-        return jsonify(posts)
+        return jsonify(load_posts())
     except Exception as exc:
         return jsonify({"error": str(exc)}), 500
 
@@ -101,51 +91,43 @@ def api_post(slug: str):
         posts = load_posts()
         post = find_post(slug, posts)
         if post is None:
-            return {"error": "Post not found"}, 404
+            return jsonify({"error": "Post not found"}), 404
 
-        file_path = ROOT / post.get("file", "")
-        if not file_path.exists() or not file_path.is_file():
-            return {"error": "Article file not found"}, 404
+        relative_file = post.get("file", "")
+        file_path = (ROOT / relative_file).resolve()
+        if not str(file_path).startswith(str(ROOT)) or not file_path.is_file():
+            return jsonify({"error": "Article file not found"}), 404
 
         markdown = file_path.read_text(encoding="utf-8")
+        tags = " / ".join(escape_html(tag) for tag in post.get("tags", []))
         html_body = markdown_to_html(markdown)
-        html_response = f"<p class=\"meta\">{escape_html(post.get('date', ''))} · {' / '.join(escape_html(tag) for tag in post.get('tags', []))}</p>\n{html_body}"
+        html_response = (
+            f'<p class="meta">{escape_html(post.get("date", ""))} · {tags}</p>\n'
+            f"{html_body}"
+        )
         return html_response, 200, {"Content-Type": "text/html; charset=utf-8"}
     except Exception as exc:
-        return {"error": str(exc)}, 500
+        return jsonify({"error": str(exc)}), 500
 
 
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def catch_all(path):
-    if path == "":
-        file_name = "index.html"
-    else:
-        file_name = path
+    file_name = "index.html" if path == "" else path
+    file_path = (ROOT / file_name).resolve()
 
-    file_path = ROOT / file_name
-
-    if not file_path.exists() or not file_path.is_file():
+    if not str(file_path).startswith(str(ROOT)) or not file_path.is_file():
         return "Not found", 404
 
-    try:
-        content = file_path.read_bytes()
-        if file_name.endswith(".html"):
-            mime_type = "text/html; charset=utf-8"
-        elif file_name.endswith(".css"):
-            mime_type = "text/css; charset=utf-8"
-        elif file_name.endswith(".js"):
-            mime_type = "text/javascript; charset=utf-8"
-        elif file_name.endswith(".json"):
-            mime_type = "application/json; charset=utf-8"
-        elif file_name.endswith(".md"):
-            mime_type = "text/markdown; charset=utf-8"
-        else:
-            mime_type = "application/octet-stream"
-
-        return content, 200, {"Content-Type": mime_type}
-    except Exception as exc:
-        return f"Error: {exc}", 500
+    mime_types = {
+        ".html": "text/html; charset=utf-8",
+        ".css": "text/css; charset=utf-8",
+        ".js": "text/javascript; charset=utf-8",
+        ".json": "application/json; charset=utf-8",
+        ".md": "text/markdown; charset=utf-8",
+    }
+    mime_type = mime_types.get(file_path.suffix, "application/octet-stream")
+    return file_path.read_bytes(), 200, {"Content-Type": mime_type}
 
 
 if __name__ == "__main__":
