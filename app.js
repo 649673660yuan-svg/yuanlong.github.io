@@ -3,7 +3,6 @@ const state = {
   activeTag: "全部",
   query: "",
   selectedSlug: "",
-  useApi: true,
 };
 
 const postList = document.querySelector("#postList");
@@ -83,23 +82,26 @@ function markdownToHtml(markdown) {
   return html.join("\n");
 }
 
-async function fetchJson(url) {
+async function fetchText(url) {
   const response = await fetch(url);
   if (!response.ok) {
     throw new Error(`${url} 返回 ${response.status}`);
   }
-  return response.json();
+  return response.text();
 }
 
 async function loadPosts() {
-  try {
-    const posts = await fetchJson("/api/posts");
-    state.useApi = true;
-    return posts;
-  } catch {
-    state.useApi = false;
-    return fetchJson("posts.json");
+  const response = await fetch("posts.json");
+  if (!response.ok) {
+    throw new Error(`posts.json 返回 ${response.status}`);
   }
+
+  const posts = await response.json();
+  if (!Array.isArray(posts)) {
+    throw new Error("posts.json 必须是文章数组");
+  }
+
+  return posts;
 }
 
 function getFilteredPosts() {
@@ -160,20 +162,7 @@ async function selectPost(slug) {
     <h3>正在加载文章...</h3>
   `;
 
-  if (state.useApi) {
-    const response = await fetch(`/api/post/${encodeURIComponent(slug)}`);
-    if (!response.ok) {
-      throw new Error(`文章接口返回 ${response.status}`);
-    }
-    reader.innerHTML = await response.text();
-    return;
-  }
-
-  const response = await fetch(post.file);
-  if (!response.ok) {
-    throw new Error(`文章文件返回 ${response.status}`);
-  }
-  const markdown = await response.text();
+  const markdown = await fetchText(post.file);
   reader.innerHTML = `
     <p class="meta">${formatDate(post.date)} · ${(post.tags || []).join(" / ")}</p>
     ${markdownToHtml(markdown)}
@@ -181,12 +170,7 @@ async function selectPost(slug) {
 }
 
 async function init() {
-  const posts = await loadPosts();
-  if (!Array.isArray(posts)) {
-    throw new Error("文章列表不是数组，请检查 posts.json 或 /api/posts");
-  }
-
-  state.posts = posts.sort((a, b) => b.date.localeCompare(a.date));
+  state.posts = (await loadPosts()).sort((a, b) => b.date.localeCompare(a.date));
 
   renderTags();
   renderPostList();
@@ -194,6 +178,16 @@ async function init() {
   if (state.posts[0]) {
     await selectPost(state.posts[0].slug);
   }
+}
+
+function showError(error) {
+  reader.innerHTML = `
+    <div class="empty-state">
+      <p class="eyebrow">Error</p>
+      <h3>文章加载失败</h3>
+      <p>${escapeHtml(error.message)}</p>
+    </div>
+  `;
 }
 
 tagFilter.addEventListener("click", (event) => {
@@ -216,15 +210,5 @@ searchInput.addEventListener("input", (event) => {
   state.query = event.target.value;
   renderPostList();
 });
-
-function showError(error) {
-  reader.innerHTML = `
-    <div class="empty-state">
-      <p class="eyebrow">Error</p>
-      <h3>文章加载失败</h3>
-      <p>${escapeHtml(error.message)}</p>
-    </div>
-  `;
-}
 
 init().catch(showError);

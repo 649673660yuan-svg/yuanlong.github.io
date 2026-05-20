@@ -3,7 +3,7 @@
     "slug": "frontend-debug-notes-2",
     "title": "一次前端调试复盘 2",
     "date": "2026-05-20",
-    "summary": "继续记录前端调试时的状态管理、接口排查和复盘方法。",
+    "summary": "记录静态博客在 GitHub Pages 上读取 posts.json 和 Markdown 文章的排查过程。",
     "tags": ["前端", "调试", "复盘"],
     "file": "posts/frontend-debug-notes-2.md"
   },
